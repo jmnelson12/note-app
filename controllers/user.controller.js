@@ -33,12 +33,12 @@ function register(req, res) {
     User.find({ email: email }, (err, prevUser) => {
         // Check if user exists or there is an error
         if (err) {
-            return res.send({
+            return res.json({
                 success: false,
-                message: "Server error"
+                message: "Server error. Please refresh the page and try again."
             });
         } else if (prevUser.length > 0) {
-            return res.send({
+            return res.json({
                 success: false,
                 message: "Account already exists"
             });
@@ -56,13 +56,13 @@ function register(req, res) {
     // Save User
     newUser.save((err, user) => {
         if (err) {
-            return res.send({
+            return res.json({
                 success: false,
                 message:
                     "Server error. Couldn't create user. Please refresh the page and try again."
             });
         }
-        res.send({
+        res.json({
             success: true,
             message: "Success"
         });
@@ -73,14 +73,14 @@ function login(req, res) {
     let { email } = req.body;
 
     if (!password && !email) {
-        return res.send({
+        return res.json({
             success: false,
             message: "Please enter your email and password"
         });
     }
 
     if (!password || password.length < 6) {
-        return res.send({
+        return res.json({
             success: false,
             message:
                 "Please enter your password. There must be at lease 6 characters."
@@ -89,7 +89,7 @@ function login(req, res) {
 
     // Email validation
     if (!email) {
-        return res.send({
+        return res.json({
             success: false,
             message: "Please enter your email"
         });
@@ -97,60 +97,60 @@ function login(req, res) {
     email = email.toLowerCase();
 
     // Check user
-    User.find({ email: email }, (err, users) => {
-        // Check for error
-        if (err) {
-            return res.send({
-                success: false,
-                message:
-                    "Server Error. Couldn't Login user. Please refresh the page and try again."
-            });
-        }
+    getUserByEmail(email).then(_res => {
+        try {
+            if (_res.success) {
+                const user = _res.payload;
 
-        if (users.length != 1) {
-            return res.send({
-                success: false,
-                message: "User not found"
-            });
-        }
+                if (!user) {
+                    return res.json({
+                        success: false,
+                        message:
+                            "User doesn't exist. Please create account and try again."
+                    });
+                }
 
-        // grab user
-        const user = users[0];
+                // Verify Password
+                if (!user.validPassword(password)) {
+                    return res.json({
+                        success: false,
+                        message: "Invalid password"
+                    });
+                }
+                // Create new user session
+                const userSession = new UserSession();
+                userSession.userId = user._id;
 
-        // Verify Password
-        if (!user.validPassword(password)) {
-            return res.send({
-                success: false,
-                message: "Invalid password"
-            });
-        }
+                // Save user session
+                userSession.save((err, doc) => {
+                    if (err) {
+                        return res.json({
+                            success: false,
+                            message:
+                                "Error creating session. Please refresh the page and try again."
+                        });
+                    }
 
-        // Create new user session
-        const userSession = new UserSession();
-        userSession.userId = user._id;
+                    const { email, type } = user;
 
-        // Save user session
-        userSession.save((err, doc) => {
-            if (err) {
-                return res.send({
-                    success: false,
-                    message:
-                        "Error creating session. Please refresh the page and try again."
+                    return res.json({
+                        success: true,
+                        message: "Valid Login",
+                        token: doc._id,
+                        userData: {
+                            email,
+                            type
+                        }
+                    });
                 });
             }
-
-            const { email, type } = user;
-
-            return res.send({
-                success: true,
-                message: "Valid Login",
-                token: doc._id,
-                userData: {
-                    email,
-                    type
-                }
+        } catch (e) {
+            return res.json({
+                success: false,
+                message:
+                    "Server Error. Couln't login user. Please reload and try again."
             });
-        });
+        }
     });
 }
 function verify(req, res) {
@@ -181,12 +181,69 @@ function verify(req, res) {
     });
 }
 function logout(req, res) {
-    return res.json({
-        success: true,
-        payload: "Called from logout"
-    });
+    try {
+        const token = req.body.token || req.query.token || req.params.token;
+
+        if (!token) {
+            return res.json({
+                success: false,
+                payload: "Error logging out. No user token provided."
+            });
+        }
+
+        deleteSession(token).then(_res => {
+            return res.json(_res);
+        });
+    } catch (e) {
+        return res.json({
+            success: false,
+            payload: "Server Error. Please refresh the page and try again."
+        });
+    }
 }
-function deleteUser(req, res) {}
+function deleteUser(req, res) {
+    const token = req.query.token || req.body.token;
+
+    if (!token) {
+        return res.json({
+            success: false,
+            payload: "Error logging out. No user token provided."
+        });
+    }
+
+    verifyUserSession(token).then(_res => {
+        if (_res.success) {
+            const session = _res.payload;
+            const { userId } = session;
+
+            deleteSession(session._id).then(_r => {
+                if (_r.success) {
+                    deleteUser(userId).then(u => {
+                        return res.json(u);
+                    });
+                } else {
+                    return res.json({
+                        success: false,
+                        message:
+                            "Server error. Error deleteing user. Please refresh the page and try again."
+                    });
+                }
+            });
+        } else {
+            return res.json({
+                success: false,
+                message: "Must be logged in to delete user."
+            });
+        }
+    });
+
+    if (!token) {
+        return res.json({
+            success: false,
+            message: "No token provided"
+        });
+    }
+}
 
 // general functions
 async function verifyUserSession(token) {
@@ -199,6 +256,7 @@ async function verifyUserSession(token) {
 
     try {
         return await UserSession.findById(token).then(session => {
+            if (!session) throw "No session";
             return {
                 success: true,
                 payload: session
@@ -235,6 +293,80 @@ async function getUserById(id) {
         return {
             success: false,
             message: "No user found"
+        };
+    }
+}
+async function getUserByEmail(email) {
+    try {
+        return await User.findOne({ email: email }).then(user => {
+            if (user && user.isDeleted) {
+                return {
+                    success: false,
+                    message: "User has been deleted."
+                };
+            }
+            return {
+                success: true,
+                payload: user
+            };
+        });
+    } catch (e) {
+        return {
+            success: false,
+            message:
+                "Server Error. Couldn't Login user. Please refresh the page and try again."
+        };
+    }
+}
+async function deleteSession(id) {
+    try {
+        return await UserSession.findOneAndDelete({ _id: id }).then(
+            (err, session) => {
+                if (err) {
+                    return {
+                        success: false,
+                        payload: "Server Error. Error deleting session."
+                    };
+                }
+                return {
+                    success: true,
+                    message: "Session Deleted"
+                };
+            }
+        );
+    } catch (e) {
+        return {
+            success: false,
+            message: "Server Error. Error deleting session."
+        };
+    }
+}
+async function deleteUser(id) {
+    try {
+        return await User.findByIdAndDelete(id).then((err, doc) => {
+            if (err) {
+                return {
+                    success: false,
+                    message: "Error deleting user"
+                };
+            }
+
+            if (!doc || doc.length === 0) {
+                return {
+                    success: false,
+                    message: "Invalid token"
+                };
+            }
+
+            return {
+                success: true,
+                message: "User Deleted"
+            };
+        });
+    } catch (e) {
+        return {
+            success: false,
+            message: "Server Error. Error deleting user."
         };
     }
 }
