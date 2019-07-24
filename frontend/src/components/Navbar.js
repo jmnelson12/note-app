@@ -7,6 +7,9 @@ import MenuIcon from "@material-ui/icons/Menu";
 import Typography from "@material-ui/core/Typography";
 
 function Navbar({ open, handleDrawerOpen, classes, setIsDarkTheme }) {
+  // onClick={() => {
+  //   setIsDarkTheme(true);
+  // }}
   return (
     <AppBar
       position="fixed"
@@ -14,9 +17,6 @@ function Navbar({ open, handleDrawerOpen, classes, setIsDarkTheme }) {
       className={clsx(classes.appBar, {
         [classes.appBarShift]: open
       })}
-      onClick={() => {
-        setIsDarkTheme(true);
-      }}
     >
       <Toolbar variant="dense">
         <IconButton

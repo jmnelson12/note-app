@@ -31,3 +31,11 @@ html {
 textarea {
   background-image: url("https://www.transparenttextures.com/patterns/cream-paper.png");
 }
+
+svg {
+  color: #068acf;
+}
+
+textarea:focus {
+  outline: none;
+}

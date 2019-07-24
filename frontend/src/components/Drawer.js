@@ -8,6 +8,9 @@ import IconButton from "@material-ui/core/IconButton";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import DrawerItem from "./DrawerItem";
+import InputBase from "@material-ui/core/InputBase";
+import SearchIcon from "@material-ui/icons/Search";
+import Paper from "@material-ui/core/Paper";
 
 function DrawerLeft({ open, handleDrawerClose, classes }) {
   const theme = useTheme();
@@ -25,6 +28,16 @@ function DrawerLeft({ open, handleDrawerClose, classes }) {
         }}
       >
         <div className={classes.drawerHeader}>
+          <Paper className={classes.drawerSearchWrapper}>
+            <IconButton size={"small"} aria-label="Search">
+              <SearchIcon className={classes.searchIcon} />
+            </IconButton>
+            <InputBase
+              className={classes.drawerSearch}
+              placeholder="Search"
+              inputProps={{ "aria-label": "Search" }}
+            />
+          </Paper>
           <IconButton onClick={handleDrawerClose}>
             {theme.direction === "ltr" ? (
               <ChevronLeftIcon />
@@ -35,8 +48,20 @@ function DrawerLeft({ open, handleDrawerClose, classes }) {
         </div>
         <Divider />
         <List>
-          {["Inbox", "Starred", "Send email", "Drafts"].map((text, index) => (
-            <DrawerItem key={index} text={text} date={"date goes here"} />
+          {[
+            "This is a line.",
+            "TODO",
+            "The joy is in the journey",
+            "Movies & Books",
+            "Organize & Backup",
+            '"Two roads diverged in a ..."'
+          ].map((text, index) => (
+            <DrawerItem
+              key={index}
+              text={text}
+              date={"7/23/19"}
+              classes={classes}
+            />
           ))}
         </List>
       </Drawer>
