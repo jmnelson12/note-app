@@ -12,10 +12,6 @@ const NoteSchema = new mongoose.Schema({
     noteContent: {
         type: String,
         required: true
-    },
-    isDeleted: {
-        type: Boolean,
-        default: false
     }
 });
 

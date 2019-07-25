@@ -13,10 +13,6 @@ const UserSchema = new mongoose.Schema({
         default: "",
         required: true
     },
-    isDeleted: {
-        type: Boolean,
-        default: false
-    },
     createdDate: {
         type: Date,
         default: Date.now()
