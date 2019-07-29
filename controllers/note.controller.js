@@ -12,38 +12,25 @@ async function create(req, res) {
     });
 
     newNote.save((err, note) => {
-        if (err) {
-            return responseToSend(res, {
-                message:
-                    "Server error. Couldn't create note. Please refresh the page and try again."
-            });
-        }
+        console.log(err, note);
+        const responseData = err
+            ? {
+                  message:
+                      "Server error. Couldn't create note. Please refresh the page and try again."
+              }
+            : {
+                  success: true,
+                  message: "Success"
+              };
 
-        return responseToSend(res, {
-            success: true,
-            message: "Success"
-        });
+        return responseToSend(res, responseData);
     });
 }
-
 async function get(req, res) {
     const noteId = req.params.id;
 
     try {
         const note = await Note.findById(noteId);
-        // const userDeleted = await isUserDeleted(note.userId);
-
-        if (note.isDeleted) {
-            return responseToSend(res, {
-                message: "Note was deleted."
-            });
-        }
-
-        // if (userDeleted) {
-        // return responseToSend(res, {
-        // message: "User no longer exists."
-        // })
-        // }
 
         // only return noteContent and createdDate
         return responseToSend(res, {
@@ -61,15 +48,13 @@ async function get(req, res) {
         });
     }
 }
-
 async function getAll(req, res) {
     const token = req.query.token || req.body.token;
 
     try {
         const userId = await getUserIdFromToken(token);
         const allNotes = await Note.find({
-            userId,
-            isDeleted: false
+            userId
         });
 
         /*
@@ -90,9 +75,7 @@ async function getAll(req, res) {
                 "Server Error. Error getting all notes. Please refresh the page and try again."
         });
     }
-    // only return noteContent and createdDate
 }
-
 async function edit(req, res) {
     const noteId = req.params.id;
     const { noteContent } = req.body;
@@ -104,18 +87,20 @@ async function edit(req, res) {
                 noteContent
             },
             (err, model) => {
-                if (err) {
-                    return responseToSend(res, {
-                        message:
-                            "Server Error. Error editing note. Please refresh the page and try again."
-                    });
-                }
+                const responseData = err
+                    ? {
+                          message:
+                              "Server Error. Error editing note. Please refresh the page and try again."
+                      }
+                    : {
+                          success: true,
+                          message: "Successfully edited note",
+                          payload: {
+                              noteId: noteId
+                          }
+                      };
 
-                return responseToSend(res, {
-                    noteId: noteId,
-                    success: true,
-                    message: "Successfully edited note"
-                });
+                return responseToSend(res, responseData);
             }
         );
     } catch (e) {
@@ -125,7 +110,6 @@ async function edit(req, res) {
         });
     }
 }
-
 function deleteNote(req, res) {
     const noteId = req.params.id;
 
@@ -136,17 +120,17 @@ function deleteNote(req, res) {
                 isDeleted: true
             },
             (err, model) => {
-                if (err) {
-                    return responseToSend(res, {
-                        message:
-                            "Server Error. Error deleting note. Please refresh the page and try again."
-                    });
-                }
+                const responseData = err
+                    ? {
+                          message:
+                              "Server Error. Error deleting note. Please refresh the page and try again."
+                      }
+                    : {
+                          success: true,
+                          message: "Successfully deleted note"
+                      };
 
-                return responseToSend(res, {
-                    success: true,
-                    message: "Successfully deleted note"
-                });
+                return responseToSend(res, responseData);
             }
         );
     } catch (e) {
