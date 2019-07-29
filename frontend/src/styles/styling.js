@@ -9,8 +9,6 @@ const useStyles = makeStyles(theme => ({
       duration: theme.transitions.duration.leavingScreen
     }),
     boxShadow: "none",
-    backgroundImage:
-      'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
     border: "none"
   },
   appBarShift: {
@@ -55,21 +53,17 @@ const useStyles = makeStyles(theme => ({
   drawerItem: {
     display: "flex",
     flexFlow: "column nowrap",
-    alignItems: "flex-start"
+    alignItems: "flex-start !important"
   },
   drawerTitle: {
     fontWeight: "bold"
-  },
-  drawerDate: {
-    color: "#6E6E6E"
   },
   drawerPaper: {
     width: drawerWidth
   },
   drawerSearchWrapper: {
-    height: "40px",
-    boxShadow: "none",
-    border: "1px solid #aeaeae"
+    height: "32px",
+    border: "1px solid"
   },
   drawerSearch: {
     marginLeft: 8,
@@ -84,16 +78,20 @@ const useStyles = makeStyles(theme => ({
   },
   textArea: {
     height: `calc(100% - 48px)`,
-    marginTop: "48px",
+    marginTop: "48px !important",
     resize: "none",
-    border: "none"
+    border: "none",
+    padding: "0"
   },
   root: {
     display: "flex",
-    height: "100%"
+    height: "100%",
+    overflowY: "auto"
   },
   searchIcon: {
-    color: "#666"
+    color: "#666",
+    fontSize: "1.5rem",
+    marginTop: "-2px"
   }
 }));
 

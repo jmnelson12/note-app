@@ -18,7 +18,7 @@ function DrawerItem({ text, date, classes }) {
           className={classes.drawerDate}
         />
       </ListItem>
-      <Divider className={classes.divider} />
+      <Divider variant="middle" className={classes.divider} />
     </>
   );
 }

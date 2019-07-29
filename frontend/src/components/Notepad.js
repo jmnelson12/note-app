@@ -1,20 +1,42 @@
 import React, { useState } from "react";
 import clsx from "clsx";
-import { useTheme } from "@material-ui/core/styles";
-import showdown from "showdown";
+import ReactMde from "react-mde";
+import * as Showdown from "showdown";
+import "react-mde/lib/styles/css/react-mde-all.css";
 
-const converter = new showdown.Converter();
+const converter = new Showdown.Converter({
+  tables: true,
+  simplifiedAutoLink: true,
+  strikethrough: true,
+  tasklists: true
+});
 
-// material ui - paper
 function Notepad({ open, classes }) {
-  const [text, setText] = useState("");
+  const [value, setValue] = useState("**Hello world!!!**");
+  const [selectedTab, setSelectedTab] = useState("write");
+  const [timeoutId, setTimeoutId] = useState("null");
 
-  function handleTextChange(e) {
-    setText(e.target.value);
+  function handleChange(val) {
+    setValue(val);
+
+    if (timeoutId) setTimeoutId(clearTimeout(timeoutId));
+
+    setTimeoutId(
+      setTimeout(function() {
+        console.log("auto saved");
+      }, 5000)
+    );
   }
 
   return (
-    <textarea
+    <ReactMde
+      value={value}
+      onChange={handleChange}
+      selectedTab={selectedTab}
+      onTabChange={setSelectedTab}
+      generateMarkdownPreview={markdown =>
+        Promise.resolve(converter.makeHtml(markdown))
+      }
       className={clsx(
         classes.content,
         {
@@ -22,9 +44,6 @@ function Notepad({ open, classes }) {
         },
         classes.textArea
       )}
-      autoFocus={true}
-      value={text}
-      onChange={handleTextChange}
     />
   );
 }

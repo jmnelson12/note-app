@@ -6,10 +6,13 @@ import IconButton from "@material-ui/core/IconButton";
 import MenuIcon from "@material-ui/icons/Menu";
 import Typography from "@material-ui/core/Typography";
 
-function Navbar({ open, handleDrawerOpen, classes, setIsDarkTheme }) {
-  // onClick={() => {
-  //   setIsDarkTheme(true);
-  // }}
+function Navbar({
+  open,
+  handleDrawerOpen,
+  classes,
+  setIsDarkTheme,
+  isDarkTheme
+}) {
   return (
     <AppBar
       position="fixed"
@@ -17,6 +20,9 @@ function Navbar({ open, handleDrawerOpen, classes, setIsDarkTheme }) {
       className={clsx(classes.appBar, {
         [classes.appBarShift]: open
       })}
+      onClick={() => {
+        //setIsDarkTheme(!isDarkTheme);
+      }}
     >
       <Toolbar variant="dense">
         <IconButton
@@ -28,9 +34,9 @@ function Navbar({ open, handleDrawerOpen, classes, setIsDarkTheme }) {
         >
           <MenuIcon />
         </IconButton>
-        {/* <Typography variant="h6" noWrap>
+        <Typography variant="h6" noWrap>
           User/Guest Menu
-        </Typography> */}
+        </Typography>
       </Toolbar>
     </AppBar>
   );

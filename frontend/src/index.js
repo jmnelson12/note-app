@@ -1,6 +1,5 @@
 import React, { useState, useEffect, Suspense } from "react";
 import ReactDOM from "react-dom";
-import { createMuiTheme } from "@material-ui/core/styles";
 import { ThemeProvider } from "@material-ui/styles";
 import { UserProvider } from "./context/user";
 import { NotesProvider } from "./context/notes";
@@ -10,7 +9,8 @@ import {
   token_key,
   notes_key
 } from "./utils/storage";
-import useStyles from "./styling";
+import useStyles from "./styles/styling";
+import useAppTheme from "./styles/appTheme";
 import "./styles/main.css";
 
 const Drawer = React.lazy(() => import("./components/Drawer"));
@@ -26,12 +26,7 @@ function Main() {
   });
   const [drawerOpen, setDrawerOpen] = useState(true);
   const [isDarkTheme, setIsDarkTheme] = useState(false);
-  const theme = createMuiTheme({
-    palette: {
-      type: isDarkTheme ? "dark" : "light"
-    },
-    shadows: ["none"]
-  });
+  const theme = useAppTheme({ isDarkTheme });
   const classes = useStyles();
 
   useEffect(() => {
@@ -46,17 +41,24 @@ function Main() {
   function handleDrawerClose() {
     setDrawerOpen(false);
   }
+  function handleKeydown(e) {
+    let charCode = String.fromCharCode(e.which).toLowerCase();
+    if (e.ctrlKey && charCode === "s") {
+      e.preventDefault();
+    }
+  }
 
   return (
     <Suspense fallback={<div className="global-loader">Loading...</div>}>
       <ThemeProvider theme={theme}>
-        <div className="Main">
+        <div className="Main" onKeyDown={handleKeydown}>
           <UserProvider loggedIn={userLoggedIn} user={userData}>
             <Navbar
               open={drawerOpen}
               handleDrawerOpen={handleDrawerOpen}
               classes={classes}
               setIsDarkTheme={setIsDarkTheme}
+              isDarkTheme={isDarkTheme}
             />
             <NotesProvider notes={userNotes}>
               <div className={classes.root}>

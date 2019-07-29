@@ -1,20 +1,16 @@
 import React from "react";
-import { useTheme } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import List from "@material-ui/core/List";
 import Divider from "@material-ui/core/Divider";
 import IconButton from "@material-ui/core/IconButton";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import DrawerItem from "./DrawerItem";
 import InputBase from "@material-ui/core/InputBase";
 import SearchIcon from "@material-ui/icons/Search";
 import Paper from "@material-ui/core/Paper";
 
 function DrawerLeft({ open, handleDrawerClose, classes }) {
-  const theme = useTheme();
-
   return (
     <>
       <CssBaseline />
@@ -29,7 +25,7 @@ function DrawerLeft({ open, handleDrawerClose, classes }) {
       >
         <div className={classes.drawerHeader}>
           <Paper className={classes.drawerSearchWrapper}>
-            <IconButton size={"small"} aria-label="Search">
+            <IconButton size={"small"} disabled aria-label="Search">
               <SearchIcon className={classes.searchIcon} />
             </IconButton>
             <InputBase
@@ -39,11 +35,7 @@ function DrawerLeft({ open, handleDrawerClose, classes }) {
             />
           </Paper>
           <IconButton onClick={handleDrawerClose}>
-            {theme.direction === "ltr" ? (
-              <ChevronLeftIcon />
-            ) : (
-              <ChevronRightIcon />
-            )}
+            <ChevronLeftIcon />
           </IconButton>
         </div>
         <Divider />
