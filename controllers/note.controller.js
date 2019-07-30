@@ -12,7 +12,6 @@ async function create(req, res) {
     });
 
     newNote.save((err, note) => {
-        console.log(err, note);
         const responseData = err
             ? {
                   message:
@@ -38,7 +37,8 @@ async function get(req, res) {
             payload: {
                 noteId: note._id,
                 noteContent: note.noteContent,
-                createdDate: note.createdDate
+                createdDate: note.createdDate,
+                lastEditedDate: note.lastEditedDate
             }
         });
     } catch (e) {
@@ -55,18 +55,14 @@ async function getAll(req, res) {
         const userId = await getUserIdFromToken(token);
         const allNotes = await Note.find({
             userId
-        });
-
-        /*
-         * .select("noteContent createdDate _id")
-         * .exec((err, user) => {})
-         */
-        console.log(allNotes);
+        })
+            .select("noteContent createdDate lastEditedDate _id")
+            .exec();
 
         return responseToSend(res, {
             success: true,
             payload: {
-                allNotes: []
+                allNotes
             }
         });
     } catch (e) {
@@ -76,15 +72,17 @@ async function getAll(req, res) {
         });
     }
 }
-async function edit(req, res) {
+function edit(req, res) {
     const noteId = req.params.id;
     const { noteContent } = req.body;
 
     try {
+        const lastEditedDate = Date.now();
         Note.findByIdAndUpdate(
             noteId,
             {
-                noteContent
+                noteContent,
+                lastEditedDate
             },
             (err, model) => {
                 const responseData = err
@@ -96,7 +94,8 @@ async function edit(req, res) {
                           success: true,
                           message: "Successfully edited note",
                           payload: {
-                              noteId: noteId
+                              noteId,
+                              lastEditedDate
                           }
                       };
 
@@ -114,25 +113,20 @@ function deleteNote(req, res) {
     const noteId = req.params.id;
 
     try {
-        Note.findByIdAndUpdate(
-            noteId,
-            {
-                isDeleted: true
-            },
-            (err, model) => {
-                const responseData = err
-                    ? {
-                          message:
-                              "Server Error. Error deleting note. Please refresh the page and try again."
-                      }
-                    : {
-                          success: true,
-                          message: "Successfully deleted note"
-                      };
+        Note.findByIdAndDelete(noteId, (err, model) => {
+            console.log(err, model);
+            const responseData = err
+                ? {
+                      message:
+                          "Server Error. Error deleting note. Please refresh the page and try again."
+                  }
+                : {
+                      success: true,
+                      message: "Successfully deleted note"
+                  };
 
-                return responseToSend(res, responseData);
-            }
-        );
+            return responseToSend(res, responseData);
+        });
     } catch (e) {
         return responseToSend(res, {
             message:
